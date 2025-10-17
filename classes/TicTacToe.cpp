@@ -148,8 +148,11 @@ Player* TicTacToe::checkForWinner()
 
         //I implement it in this style rather than a nested if for clarity.
         Player *spot1Owner = ownerAt(winningCombos[i][0]);
+        if(spot1Owner == nullptr) continue; // if the first spot is empty, skip this combo
         Player *spot2Owner = ownerAt(winningCombos[i][1]);
+        if(spot2Owner == nullptr) continue; // if the second spot is empty, skip this combo
         Player *spot3Owner = ownerAt(winningCombos[i][2]);
+        if(spot3Owner == nullptr) continue; // if the third spot is empty, skip this combo
 
         if(spot1Owner == spot2Owner && spot2Owner == spot3Owner)
             return spot1Owner;
