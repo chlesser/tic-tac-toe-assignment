@@ -146,7 +146,7 @@ Player* TicTacToe::checkForWinner()
     //I loop through each combo
     for(int i = 0; i < 8; i++) {
 
-        //I implement it in this style rather than a nested if for clarity.
+        //I implement it in this style to avoid multiple calls to ownerAt
         Player *spot1Owner = ownerAt(winningCombos[i][0]);
         if(spot1Owner == nullptr) continue; // if the first spot is empty, skip this combo
         Player *spot2Owner = ownerAt(winningCombos[i][1]);
