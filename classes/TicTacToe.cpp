@@ -27,7 +27,7 @@
 // -----------------------------------------------------------------------------
 
 const int AI_PLAYER   = 1;      // index of the AI player (O)
-const int HUMAN_PLAYER= 0;      // index of the human player (X)
+const int HUMAN_PLAYER= -1;      // index of the human player (X)
 
 TicTacToe::TicTacToe()
 {
@@ -64,6 +64,8 @@ void TicTacToe::setUpBoard()
             _grid[y][x].initHolder(ImVec2(15 + x * 100, 25 + y * 100), "square.png", x, y);
         }
     }
+    if(gameHasAI())
+        setAIPlayer(AI_PLAYER);
     startGame();
 }
 
@@ -267,6 +269,88 @@ void TicTacToe::setStateString(const std::string &s)
 //
 void TicTacToe::updateAI() 
 {
-    // we will implement the AI in the next assignment!
-}
+    int bestMove = -1000;
+    int bestSquare = -1;
 
+    std::string state = stateString();
+
+    for(int i = 0; i < 9; i++) {
+        if(state[i] == '0') {
+            state[i] = '2';
+            int result = -negamax(state, 0, HUMAN_PLAYER);
+            if(result > bestMove) {
+                bestMove = result;
+                bestSquare = i;
+            }
+            state[i] = '0';
+        }
+    }
+    if(bestSquare != -1) {
+        int x = bestSquare % 3;
+        int y = bestSquare / 3;
+        BitHolder *holder = &_grid[y][x];
+        actionForEmptyHolder(holder);
+        endTurn();
+    }
+}
+/*
+Taken from the wikipedia, no AB pruning
+    function negamax(node, depth, color) is
+    if depth = 0 or node is a terminal node then
+        return color × the heuristic value of node
+    value := −∞
+    for each child of node do
+        value := max(value, −negamax(child, depth − 1, −color))
+    return value
+*/
+int TicTacToe::negamax(std::string& state, int depth, int playerNum)
+{
+    //Leaf 1 -> There's a winner
+    int boardWinner = NMCheckForWinner(state);
+    if (boardWinner)
+        return -boardWinner;
+    
+    //Leaf 2 -> There's a draw
+    bool boardFull = NMCheckForDraw(state);
+    if(boardFull)
+        return 0;
+
+    //Non-Leaf, add to stack
+    int bsf = -1000;
+    for(int i = 0; i < 9; i++)
+    {
+        if(state[i] == '0') {
+            state[i] = playerNum == HUMAN_PLAYER ? '1' : '2';
+            int result = -negamax(state, depth++, -playerNum);
+            if(result > bsf)
+                bsf = result;
+            state[i] = '0';
+        }
+    }
+
+    return bsf;
+}
+int TicTacToe::NMCheckForWinner(std::string& state)
+{
+    //winning combos
+    const int winningCombos[8][3] = {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}, {0, 3, 6},
+                                    {1, 4, 7}, {2, 5, 8}, {0, 4, 8}, {2, 4, 6}};
+
+    //I loop through each combo
+    for(int i = 0; i < 8; i++) {
+        const int *currentTriple = winningCombos[i];
+        //I implement it in this style to avoid multiple calls to ownerAt
+        char pos1Owner = state[currentTriple[0]];
+        char pos2Owner = state[currentTriple[1]];
+        char pos3Owner = state[currentTriple[2]];
+        
+
+        if(pos1Owner != '0' && pos1Owner == pos2Owner && pos2Owner == pos3Owner)
+                return 10;
+    }
+    return 0;
+}
+bool TicTacToe::NMCheckForDraw(std::string& state)
+{
+    return state.find('0') == std::string::npos;
+}

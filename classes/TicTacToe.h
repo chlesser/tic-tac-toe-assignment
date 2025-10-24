@@ -34,6 +34,9 @@ public:
 private:
     Bit *       PieceForPlayer(const int playerNumber);
     Player*     ownerAt(int index ) const;
+    int         negamax(std::string& state, int depth, int playerNum);
+    bool        NMCheckForDraw(std::string& state);
+    int         NMCheckForWinner(std::string& state);
 
     Square      _grid[3][3];
 };
